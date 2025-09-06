@@ -952,6 +952,8 @@ services.AddEnterpriseApiClient<IYourApi, Entity, int>(options =>
 ```
 
 ### OAuth 2.0 Authentication
+
+#### Basic OAuth 2.0 Setup
 ```csharp
 services.AddOAuthAuthentication(config =>
 {
@@ -961,6 +963,387 @@ services.AddOAuthAuthentication(config =>
     config.Scope = "read write";
 });
 ```
+
+#### Complete OAuth 2.0 Example with GitHub API
+
+Here's a comprehensive example showing how to use OAuth 2.0 authentication with the GitHub API:
+
+```csharp
+// Models/GitHubModels.cs
+using System.Text.Json.Serialization;
+
+namespace MyApp.Models;
+
+public class GitHubUser
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("login")]
+    public string Login { get; set; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
+    [JsonPropertyName("avatar_url")]
+    public string AvatarUrl { get; set; } = string.Empty;
+
+    [JsonPropertyName("public_repos")]
+    public int PublicRepos { get; set; }
+
+    [JsonPropertyName("followers")]
+    public int Followers { get; set; }
+
+    [JsonPropertyName("following")]
+    public int Following { get; set; }
+}
+
+public class GitHubRepository
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("full_name")]
+    public string FullName { get; set; } = string.Empty;
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("private")]
+    public bool IsPrivate { get; set; }
+
+    [JsonPropertyName("stargazers_count")]
+    public int Stars { get; set; }
+
+    [JsonPropertyName("language")]
+    public string? Language { get; set; }
+
+    [JsonPropertyName("created_at")]
+    public DateTime CreatedAt { get; set; }
+}
+
+// Services/IGitHubApi.cs
+using Refit;
+using MyApp.Models;
+
+namespace MyApp.Services;
+
+[Headers("User-Agent: MyApp/1.0.0")]
+public interface IGitHubApi
+{
+    [Get("/user")]
+    Task<GitHubUser> GetCurrentUserAsync(CancellationToken cancellationToken = default);
+
+    [Get("/user/repos")]
+    Task<IEnumerable<GitHubRepository>> GetUserRepositoriesAsync([Query] string? type = null, CancellationToken cancellationToken = default);
+
+    [Get("/repos/{owner}/{repo}")]
+    Task<GitHubRepository> GetRepositoryAsync(string owner, string repo, CancellationToken cancellationToken = default);
+
+    [Post("/user/repos")]
+    Task<GitHubRepository> CreateRepositoryAsync([Body] CreateRepositoryRequest request, CancellationToken cancellationToken = default);
+}
+
+public class CreateRepositoryRequest
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("private")]
+    public bool IsPrivate { get; set; } = false;
+
+    [JsonPropertyName("auto_init")]
+    public bool AutoInit { get; set; } = true;
+}
+
+// Program.cs (Console Application)
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Noundry.EnterpriseApiClient.Extensions;
+using MyApp.Services;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+// Configure OAuth 2.0 for GitHub
+builder.Services.AddOAuthAuthentication(config =>
+{
+    // These should come from configuration/environment variables
+    config.ClientId = builder.Configuration["GitHub:ClientId"] ?? throw new InvalidOperationException("GitHub ClientId not configured");
+    config.ClientSecret = builder.Configuration["GitHub:ClientSecret"] ?? throw new InvalidOperationException("GitHub ClientSecret not configured");
+    config.TokenEndpoint = "https://github.com/login/oauth/access_token";
+    config.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+    config.Scope = "repo user:email";
+    config.GrantType = "authorization_code"; // For web apps with redirect
+});
+
+// Configure GitHub API client
+builder.Services.AddEnterpriseApiClient<IGitHubApi>(options =>
+{
+    options.BaseUrl = "https://api.github.com";
+    options.DefaultHeaders["Accept"] = "application/vnd.github.v3+json";
+    options.DefaultHeaders["User-Agent"] = "MyGitHubApp/1.0.0";
+});
+
+// Register business services
+builder.Services.AddScoped<GitHubService>();
+
+var host = builder.Build();
+
+// Run the application
+var gitHubService = host.Services.GetRequiredService<GitHubService>();
+await gitHubService.RunGitHubDemoAsync();
+
+// Services/GitHubService.cs
+using Microsoft.Extensions.Logging;
+using MyApp.Models;
+
+namespace MyApp.Services;
+
+public class GitHubService
+{
+    private readonly IGitHubApi _gitHubApi;
+    private readonly ILogger<GitHubService> _logger;
+
+    public GitHubService(IGitHubApi gitHubApi, ILogger<GitHubService> logger)
+    {
+        _gitHubApi = gitHubApi;
+        _logger = logger;
+    }
+
+    public async Task RunGitHubDemoAsync()
+    {
+        try
+        {
+            _logger.LogInformation("Starting GitHub API Demo with OAuth 2.0...");
+
+            // Get current user info
+            var currentUser = await _gitHubApi.GetCurrentUserAsync();
+            _logger.LogInformation("Authenticated as: {Login} ({Name})", currentUser.Login, currentUser.Name);
+            _logger.LogInformation("Public repos: {Repos}, Followers: {Followers}", 
+                currentUser.PublicRepos, currentUser.Followers);
+
+            // Get user's repositories
+            var repositories = await _gitHubApi.GetUserRepositoriesAsync("owner");
+            _logger.LogInformation("Found {Count} repositories", repositories.Count());
+
+            // Analyze repositories with LINQ
+            var repoAnalysis = repositories
+                .GroupBy(r => r.Language ?? "Unknown")
+                .Select(g => new {
+                    Language = g.Key,
+                    Count = g.Count(),
+                    TotalStars = g.Sum(r => r.Stars),
+                    AverageStars = g.Average(r => r.Stars)
+                })
+                .OrderByDescending(x => x.TotalStars)
+                .Take(5)
+                .ToList();
+
+            _logger.LogInformation("Top 5 languages by stars:");
+            foreach (var lang in repoAnalysis)
+            {
+                _logger.LogInformation("  {Language}: {Count} repos, {TotalStars} total stars ({AverageStars:F1} avg)",
+                    lang.Language, lang.Count, lang.TotalStars, lang.AverageStars);
+            }
+
+            // Find most popular repositories
+            var popularRepos = repositories
+                .Where(r => r.Stars > 0)
+                .OrderByDescending(r => r.Stars)
+                .Take(3)
+                .ToList();
+
+            if (popularRepos.Any())
+            {
+                _logger.LogInformation("Most popular repositories:");
+                foreach (var repo in popularRepos)
+                {
+                    _logger.LogInformation("  ⭐ {Name}: {Stars} stars ({Language})",
+                        repo.Name, repo.Stars, repo.Language ?? "No language");
+                }
+            }
+
+            // Example: Create a new repository (commented out to avoid creating test repos)
+            /*
+            var newRepoRequest = new CreateRepositoryRequest
+            {
+                Name = "oauth-test-repo",
+                Description = "Test repository created via OAuth 2.0 API",
+                IsPrivate = false,
+                AutoInit = true
+            };
+
+            var newRepo = await _gitHubApi.CreateRepositoryAsync(newRepoRequest);
+            _logger.LogInformation("Created new repository: {FullName}", newRepo.FullName);
+            */
+
+        }
+        catch (Refit.ApiException ex)
+        {
+            _logger.LogError("GitHub API error: {StatusCode} - {Content}", ex.StatusCode, ex.Content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred during GitHub API demo");
+        }
+    }
+}
+
+// appsettings.json
+{
+  "GitHub": {
+    "ClientId": "your-github-oauth-app-client-id",
+    "ClientSecret": "your-github-oauth-app-client-secret"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  }
+}
+```
+
+#### Web Application OAuth 2.0 Flow
+
+For web applications, you'll typically need to handle the OAuth authorization flow:
+
+```csharp
+// Controllers/AuthController.cs
+using Microsoft.AspNetCore.Mvc;
+using Noundry.EnterpriseApiClient.Authentication;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
+{
+    private readonly IOAuthAuthenticationProvider _oauthProvider;
+    private readonly IConfiguration _configuration;
+
+    public AuthController(IOAuthAuthenticationProvider oauthProvider, IConfiguration configuration)
+    {
+        _oauthProvider = oauthProvider;
+        _configuration = configuration;
+    }
+
+    [HttpGet("login")]
+    public IActionResult Login()
+    {
+        var clientId = _configuration["GitHub:ClientId"];
+        var redirectUri = _configuration["GitHub:RedirectUri"];
+        var scope = "repo user:email";
+        var state = Guid.NewGuid().ToString(); // Store this in session/cache for validation
+
+        var authUrl = $"https://github.com/login/oauth/authorize" +
+                     $"?client_id={clientId}" +
+                     $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+                     $"&scope={Uri.EscapeDataString(scope)}" +
+                     $"&state={state}";
+
+        return Redirect(authUrl);
+    }
+
+    [HttpGet("callback")]
+    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string state)
+    {
+        if (string.IsNullOrEmpty(code))
+        {
+            return BadRequest("Authorization code not provided");
+        }
+
+        // Validate state parameter (implement proper state validation)
+        
+        try
+        {
+            // Exchange code for access token
+            await _oauthProvider.ExchangeCodeForTokenAsync(code);
+            
+            return Ok(new { message = "Authentication successful" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Authentication failed: {ex.Message}");
+        }
+    }
+}
+
+// Program.cs (Web Application)
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+// Configure OAuth 2.0
+builder.Services.AddOAuthAuthentication(config =>
+{
+    config.ClientId = builder.Configuration["GitHub:ClientId"]!;
+    config.ClientSecret = builder.Configuration["GitHub:ClientSecret"]!;
+    config.TokenEndpoint = "https://github.com/login/oauth/access_token";
+    config.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+    config.RedirectUri = builder.Configuration["GitHub:RedirectUri"]!;
+    config.Scope = "repo user:email";
+});
+
+// Configure GitHub API client
+builder.Services.AddEnterpriseApiClient<IGitHubApi>(options =>
+{
+    options.BaseUrl = "https://api.github.com";
+    options.DefaultHeaders["Accept"] = "application/vnd.github.v3+json";
+});
+
+var app = builder.Build();
+
+app.MapControllers();
+app.Run();
+```
+
+#### OAuth 2.0 Configuration Options
+
+```csharp
+services.AddOAuthAuthentication(config =>
+{
+    config.ClientId = "your-client-id";
+    config.ClientSecret = "your-client-secret";
+    config.TokenEndpoint = "https://auth.provider.com/oauth/token";
+    config.AuthorizationEndpoint = "https://auth.provider.com/oauth/authorize";
+    config.RedirectUri = "https://yourapp.com/auth/callback";
+    config.Scope = "read write profile";
+    config.GrantType = "authorization_code"; // or "client_credentials"
+    
+    // Token refresh settings
+    config.AutoRefreshToken = true;
+    config.RefreshTokenBuffer = TimeSpan.FromMinutes(5); // Refresh 5 min before expiry
+    
+    // Custom headers
+    config.TokenRequestHeaders = new Dictionary<string, string>
+    {
+        ["Accept"] = "application/json",
+        ["Content-Type"] = "application/x-www-form-urlencoded"
+    };
+    
+    // PKCE support for security
+    config.UsePkce = true;
+});
+```
+
+#### Key Features of OAuth 2.0 Integration
+
+✅ **Automatic Token Management**: Handles token acquisition, storage, and refresh  
+✅ **Multiple Grant Types**: Support for authorization code, client credentials, and more  
+✅ **PKCE Support**: Enhanced security for public clients  
+✅ **Configurable Scopes**: Fine-grained permission control  
+✅ **Token Refresh**: Automatic token renewal before expiration  
+✅ **State Validation**: CSRF protection for authorization flows  
+✅ **Error Handling**: Comprehensive OAuth error handling and logging
 
 ### Custom Authentication
 ```csharp
