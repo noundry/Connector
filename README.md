@@ -107,6 +107,838 @@ var serviceProvider = services.BuildServiceProvider();
 var apiClient = serviceProvider.GetRequiredService<IYourApi>();
 ```
 
+## 📋 Complete JSONPlaceholder Example
+
+This section provides a comprehensive, step-by-step guide for setting up the JSONPlaceholder API in both console and web applications using the Enterprise API Client.
+
+### 📝 Step 1: Define Your Models
+
+First, create strongly-typed models that match the JSONPlaceholder API structure:
+
+```csharp
+// Models/User.cs
+using System.Text.Json.Serialization;
+
+namespace MyApp.Models;
+
+public class User
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("username")]
+    public string Username { get; set; } = string.Empty;
+
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = string.Empty;
+
+    [JsonPropertyName("phone")]
+    public string Phone { get; set; } = string.Empty;
+
+    [JsonPropertyName("website")]
+    public string Website { get; set; } = string.Empty;
+
+    [JsonPropertyName("address")]
+    public Address Address { get; set; } = new();
+
+    [JsonPropertyName("company")]
+    public Company Company { get; set; } = new();
+}
+
+public class Address
+{
+    [JsonPropertyName("street")]
+    public string Street { get; set; } = string.Empty;
+
+    [JsonPropertyName("suite")]
+    public string Suite { get; set; } = string.Empty;
+
+    [JsonPropertyName("city")]
+    public string City { get; set; } = string.Empty;
+
+    [JsonPropertyName("zipcode")]
+    public string Zipcode { get; set; } = string.Empty;
+
+    [JsonPropertyName("geo")]
+    public Geo Geo { get; set; } = new();
+}
+
+public class Geo
+{
+    [JsonPropertyName("lat")]
+    public string Lat { get; set; } = string.Empty;
+
+    [JsonPropertyName("lng")]
+    public string Lng { get; set; } = string.Empty;
+}
+
+public class Company
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("catchPhrase")]
+    public string CatchPhrase { get; set; } = string.Empty;
+
+    [JsonPropertyName("bs")]
+    public string Bs { get; set; } = string.Empty;
+}
+
+// Models/Post.cs
+public class Post
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("userId")]
+    public int UserId { get; set; }
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("body")]
+    public string Body { get; set; } = string.Empty;
+}
+
+// Models/Comment.cs
+public class Comment
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("postId")]
+    public int PostId { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = string.Empty;
+
+    [JsonPropertyName("body")]
+    public string Body { get; set; } = string.Empty;
+}
+```
+
+### 🔌 Step 2: Define API Interface
+
+Create a Refit interface that defines all available endpoints:
+
+```csharp
+// Services/IJsonPlaceholderApi.cs
+using MyApp.Models;
+using Refit;
+
+namespace MyApp.Services;
+
+public interface IJsonPlaceholderApi
+{
+    // Users
+    [Get("/users")]
+    Task<IEnumerable<User>> GetUsersAsync(CancellationToken cancellationToken = default);
+
+    [Get("/users/{id}")]
+    Task<User> GetUserAsync(int id, CancellationToken cancellationToken = default);
+
+    [Post("/users")]
+    Task<User> CreateUserAsync([Body] User user, CancellationToken cancellationToken = default);
+
+    [Put("/users/{id}")]
+    Task<User> UpdateUserAsync(int id, [Body] User user, CancellationToken cancellationToken = default);
+
+    [Delete("/users/{id}")]
+    Task DeleteUserAsync(int id, CancellationToken cancellationToken = default);
+
+    // Posts
+    [Get("/posts")]
+    Task<IEnumerable<Post>> GetPostsAsync(CancellationToken cancellationToken = default);
+
+    [Get("/posts/{id}")]
+    Task<Post> GetPostAsync(int id, CancellationToken cancellationToken = default);
+
+    [Get("/users/{userId}/posts")]
+    Task<IEnumerable<Post>> GetPostsByUserAsync(int userId, CancellationToken cancellationToken = default);
+
+    [Post("/posts")]
+    Task<Post> CreatePostAsync([Body] Post post, CancellationToken cancellationToken = default);
+
+    [Put("/posts/{id}")]
+    Task<Post> UpdatePostAsync(int id, [Body] Post post, CancellationToken cancellationToken = default);
+
+    [Delete("/posts/{id}")]
+    Task DeletePostAsync(int id, CancellationToken cancellationToken = default);
+
+    // Comments
+    [Get("/comments")]
+    Task<IEnumerable<Comment>> GetCommentsAsync(CancellationToken cancellationToken = default);
+
+    [Get("/comments/{id}")]
+    Task<Comment> GetCommentAsync(int id, CancellationToken cancellationToken = default);
+
+    [Get("/posts/{postId}/comments")]
+    Task<IEnumerable<Comment>> GetCommentsByPostAsync(int postId, CancellationToken cancellationToken = default);
+
+    [Post("/comments")]
+    Task<Comment> CreateCommentAsync([Body] Comment comment, CancellationToken cancellationToken = default);
+
+    [Put("/comments/{id}")]
+    Task<Comment> UpdateCommentAsync(int id, [Body] Comment comment, CancellationToken cancellationToken = default);
+
+    [Delete("/comments/{id}")]
+    Task DeleteCommentAsync(int id, CancellationToken cancellationToken = default);
+}
+```
+
+### 💼 Step 3A: Console Application Setup
+
+Create a complete console application with dependency injection:
+
+```csharp
+// Program.cs
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Noundry.EnterpriseApiClient.Extensions;
+using MyApp.Services;
+using MyApp.Models;
+
+// Create host builder for console app with DI
+var builder = Host.CreateApplicationBuilder(args);
+
+// Configure logging
+builder.Services.AddLogging(configure => configure.AddConsole());
+
+// Configure JSONPlaceholder API client
+builder.Services.AddTokenAuthentication("no-auth-required"); // JSONPlaceholder doesn't require auth
+builder.Services.AddEnterpriseApiClient<IJsonPlaceholderApi>(options =>
+{
+    options.BaseUrl = "https://jsonplaceholder.typicode.com";
+    options.DefaultHeaders["User-Agent"] = "MyConsoleApp/1.0.0";
+});
+
+// Register our application service
+builder.Services.AddScoped<JsonPlaceholderService>();
+
+var host = builder.Build();
+
+// Run the application
+var service = host.Services.GetRequiredService<JsonPlaceholderService>();
+await service.RunDemoAsync();
+
+// Services/JsonPlaceholderService.cs
+using Microsoft.Extensions.Logging;
+using MyApp.Models;
+
+namespace MyApp.Services;
+
+public class JsonPlaceholderService
+{
+    private readonly IJsonPlaceholderApi _api;
+    private readonly ILogger<JsonPlaceholderService> _logger;
+
+    public JsonPlaceholderService(IJsonPlaceholderApi api, ILogger<JsonPlaceholderService> logger)
+    {
+        _api = api;
+        _logger = logger;
+    }
+
+    public async Task RunDemoAsync()
+    {
+        _logger.LogInformation("Starting JSONPlaceholder Demo...");
+
+        try
+        {
+            // Demo 1: Get all users and display details
+            await DemoUsersAsync();
+
+            // Demo 2: Get posts and perform LINQ queries
+            await DemoPostsWithLinqAsync();
+
+            // Demo 3: Create, update, delete operations
+            await DemoCrudOperationsAsync();
+
+            // Demo 4: Complex cross-entity queries
+            await DemoComplexQueriesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred during demo");
+        }
+
+        _logger.LogInformation("Demo completed!");
+    }
+
+    private async Task DemoUsersAsync()
+    {
+        _logger.LogInformation("=== Getting Users ===");
+
+        var users = await _api.GetUsersAsync();
+        
+        foreach (var user in users.Take(3)) // Show first 3 users
+        {
+            _logger.LogInformation(
+                "User: {Name} ({Email}) from {City}, works at {Company}",
+                user.Name, user.Email, user.Address.City, user.Company.Name);
+        }
+
+        // Get specific user
+        var specificUser = await _api.GetUserAsync(1);
+        _logger.LogInformation(
+            "User 1 Details: {Name}, Phone: {Phone}, Website: {Website}",
+            specificUser.Name, specificUser.Phone, specificUser.Website);
+    }
+
+    private async Task DemoPostsWithLinqAsync()
+    {
+        _logger.LogInformation("=== Posts with LINQ Queries ===");
+
+        var posts = await _api.GetPostsAsync();
+
+        // LINQ Query 1: Posts with long titles
+        var longTitlePosts = posts
+            .Where(p => p.Title.Length > 50)
+            .OrderByDescending(p => p.Title.Length)
+            .Take(3)
+            .ToList();
+
+        _logger.LogInformation("Posts with long titles (>50 chars):");
+        foreach (var post in longTitlePosts)
+        {
+            _logger.LogInformation("  - {Title} ({Length} chars)", 
+                post.Title, post.Title.Length);
+        }
+
+        // LINQ Query 2: Posts by specific user
+        var userPosts = posts
+            .Where(p => p.UserId == 1)
+            .ToList();
+
+        _logger.LogInformation("User 1 has {Count} posts", userPosts.Count);
+
+        // LINQ Query 3: Group posts by user
+        var postsByUser = posts
+            .GroupBy(p => p.UserId)
+            .Select(g => new { UserId = g.Key, PostCount = g.Count() })
+            .OrderByDescending(x => x.PostCount)
+            .Take(3)
+            .ToList();
+
+        _logger.LogInformation("Top 3 most active users by post count:");
+        foreach (var userStat in postsByUser)
+        {
+            _logger.LogInformation("  - User {UserId}: {PostCount} posts", 
+                userStat.UserId, userStat.PostCount);
+        }
+    }
+
+    private async Task DemoCrudOperationsAsync()
+    {
+        _logger.LogInformation("=== CRUD Operations Demo ===");
+
+        // Create a new user
+        var newUser = new User
+        {
+            Name = "John Doe",
+            Username = "johndoe",
+            Email = "john.doe@example.com",
+            Phone = "123-456-7890",
+            Website = "johndoe.com",
+            Address = new Address
+            {
+                Street = "123 Main St",
+                City = "Anytown",
+                Zipcode = "12345"
+            },
+            Company = new Company
+            {
+                Name = "Acme Corp",
+                CatchPhrase = "Innovation at its best"
+            }
+        };
+
+        var createdUser = await _api.CreateUserAsync(newUser);
+        _logger.LogInformation("Created user with ID: {Id}", createdUser.Id);
+
+        // Update the user
+        createdUser.Name = "John Smith";
+        createdUser.Email = "john.smith@example.com";
+        
+        var updatedUser = await _api.UpdateUserAsync(createdUser.Id, createdUser);
+        _logger.LogInformation("Updated user name to: {Name}", updatedUser.Name);
+
+        // Create a post for the user
+        var newPost = new Post
+        {
+            UserId = createdUser.Id,
+            Title = "My First Blog Post",
+            Body = "This is the content of my first blog post. It's quite exciting!"
+        };
+
+        var createdPost = await _api.CreatePostAsync(newPost);
+        _logger.LogInformation("Created post: '{Title}' (ID: {Id})", 
+            createdPost.Title, createdPost.Id);
+
+        // Delete operations (Note: JSONPlaceholder simulates these)
+        await _api.DeletePostAsync(createdPost.Id);
+        _logger.LogInformation("Deleted post ID: {Id}", createdPost.Id);
+
+        await _api.DeleteUserAsync(createdUser.Id);
+        _logger.LogInformation("Deleted user ID: {Id}", createdUser.Id);
+    }
+
+    private async Task DemoComplexQueriesAsync()
+    {
+        _logger.LogInformation("=== Complex Cross-Entity Queries ===");
+
+        // Get all entities
+        var users = await _api.GetUsersAsync();
+        var posts = await _api.GetPostsAsync();
+        var comments = await _api.GetCommentsAsync();
+
+        // Complex Query 1: Users with their post and comment statistics
+        var userStats = users
+            .Select(u => new
+            {
+                User = u,
+                PostCount = posts.Count(p => p.UserId == u.Id),
+                CommentCount = comments.Count(c => 
+                    posts.Any(p => p.Id == c.PostId && p.UserId == u.Id))
+            })
+            .Where(stat => stat.PostCount > 0)
+            .OrderByDescending(stat => stat.PostCount + stat.CommentCount)
+            .Take(5)
+            .ToList();
+
+        _logger.LogInformation("Top 5 most active users (posts + comments on their posts):");
+        foreach (var stat in userStats)
+        {
+            _logger.LogInformation(
+                "  - {Name}: {PostCount} posts, {CommentCount} comments on their posts",
+                stat.User.Name, stat.PostCount, stat.CommentCount);
+        }
+
+        // Complex Query 2: Popular posts (posts with most comments)
+        var popularPosts = posts
+            .Select(p => new
+            {
+                Post = p,
+                CommentCount = comments.Count(c => c.PostId == p.Id),
+                Author = users.First(u => u.Id == p.UserId)
+            })
+            .Where(p => p.CommentCount > 3)
+            .OrderByDescending(p => p.CommentCount)
+            .Take(3)
+            .ToList();
+
+        _logger.LogInformation("Most popular posts (>3 comments):");
+        foreach (var popular in popularPosts)
+        {
+            _logger.LogInformation(
+                "  - '{Title}' by {Author} ({CommentCount} comments)",
+                popular.Post.Title.Substring(0, Math.Min(40, popular.Post.Title.Length)),
+                popular.Author.Name,
+                popular.CommentCount);
+        }
+
+        // Complex Query 3: Company analysis
+        var companyStats = users
+            .GroupBy(u => u.Company.Name)
+            .Select(g => new
+            {
+                Company = g.Key,
+                EmployeeCount = g.Count(),
+                TotalPosts = g.Sum(u => posts.Count(p => p.UserId == u.Id)),
+                Cities = g.Select(u => u.Address.City).Distinct().ToList()
+            })
+            .Where(c => c.EmployeeCount > 0)
+            .OrderByDescending(c => c.TotalPosts)
+            .ToList();
+
+        _logger.LogInformation("Company activity analysis:");
+        foreach (var company in companyStats)
+        {
+            _logger.LogInformation(
+                "  - {Company}: {Employees} employees, {Posts} total posts, offices in {Cities} cities",
+                company.Company,
+                company.EmployeeCount,
+                company.TotalPosts,
+                company.Cities.Count);
+        }
+    }
+}
+```
+
+### 🌐 Step 3B: Web Application Setup
+
+Create a complete ASP.NET Core web application:
+
+```csharp
+// Program.cs
+using Noundry.EnterpriseApiClient.Extensions;
+using MyApp.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Configure JSONPlaceholder API client
+builder.Services.AddTokenAuthentication("no-auth-required");
+builder.Services.AddEnterpriseApiClient<IJsonPlaceholderApi>(options =>
+{
+    options.BaseUrl = "https://jsonplaceholder.typicode.com";
+    options.DefaultHeaders["User-Agent"] = "MyWebApp/1.0.0";
+    options.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// Register business services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
+
+// Controllers/UsersController.cs
+using Microsoft.AspNetCore.Mvc;
+using MyApp.Services;
+using MyApp.Models;
+
+namespace MyApp.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
+{
+    private readonly IUserService _userService;
+    private readonly ILogger<UsersController> _logger;
+
+    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    {
+        _userService = userService;
+        _logger = logger;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+    {
+        try
+        {
+            var users = await _userService.GetAllUsersAsync();
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting users");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<User>> GetUser(int id)
+    {
+        try
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("by-city/{city}")]
+    public async Task<ActionResult<IEnumerable<User>>> GetUsersByCity(string city)
+    {
+        try
+        {
+            var users = await _userService.GetUsersByCityAsync(city);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting users by city {City}", city);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<User>> CreateUser(User user)
+    {
+        try
+        {
+            var created = await _userService.CreateUserAsync(user);
+            return CreatedAtAction(nameof(GetUser), new { id = created.Id }, created);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating user");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+}
+
+// Controllers/AnalyticsController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class AnalyticsController : ControllerBase
+{
+    private readonly IAnalyticsService _analyticsService;
+    private readonly ILogger<AnalyticsController> _logger;
+
+    public AnalyticsController(IAnalyticsService analyticsService, ILogger<AnalyticsController> logger)
+    {
+        _analyticsService = analyticsService;
+        _logger = logger;
+    }
+
+    [HttpGet("user-activity")]
+    public async Task<ActionResult> GetUserActivity()
+    {
+        try
+        {
+            var analytics = await _analyticsService.GetUserActivityAnalyticsAsync();
+            return Ok(analytics);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user activity analytics");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("popular-posts")]
+    public async Task<ActionResult> GetPopularPosts()
+    {
+        try
+        {
+            var posts = await _analyticsService.GetPopularPostsAsync();
+            return Ok(posts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting popular posts");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+}
+
+// Services/IUserService.cs & UserService.cs
+namespace MyApp.Services;
+
+public interface IUserService
+{
+    Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<User> GetUserByIdAsync(int id);
+    Task<IEnumerable<User>> GetUsersByCityAsync(string city);
+    Task<User> CreateUserAsync(User user);
+    Task<User> UpdateUserAsync(int id, User user);
+    Task DeleteUserAsync(int id);
+}
+
+public class UserService : IUserService
+{
+    private readonly IJsonPlaceholderApi _api;
+    private readonly ILogger<UserService> _logger;
+
+    public UserService(IJsonPlaceholderApi api, ILogger<UserService> logger)
+    {
+        _api = api;
+        _logger = logger;
+    }
+
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        return await _api.GetUsersAsync();
+    }
+
+    public async Task<User> GetUserByIdAsync(int id)
+    {
+        return await _api.GetUserAsync(id);
+    }
+
+    public async Task<IEnumerable<User>> GetUsersByCityAsync(string city)
+    {
+        var users = await _api.GetUsersAsync();
+        return users.Where(u => u.Address.City.Contains(city, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public async Task<User> CreateUserAsync(User user)
+    {
+        return await _api.CreateUserAsync(user);
+    }
+
+    public async Task<User> UpdateUserAsync(int id, User user)
+    {
+        return await _api.UpdateUserAsync(id, user);
+    }
+
+    public async Task DeleteUserAsync(int id)
+    {
+        await _api.DeleteUserAsync(id);
+    }
+}
+
+// Services/IAnalyticsService.cs & AnalyticsService.cs
+public interface IAnalyticsService
+{
+    Task<object> GetUserActivityAnalyticsAsync();
+    Task<IEnumerable<object>> GetPopularPostsAsync();
+}
+
+public class AnalyticsService : IAnalyticsService
+{
+    private readonly IJsonPlaceholderApi _api;
+    private readonly ILogger<AnalyticsService> _logger;
+
+    public AnalyticsService(IJsonPlaceholderApi api, ILogger<AnalyticsService> logger)
+    {
+        _api = api;
+        _logger = logger;
+    }
+
+    public async Task<object> GetUserActivityAnalyticsAsync()
+    {
+        var users = await _api.GetUsersAsync();
+        var posts = await _api.GetPostsAsync();
+
+        var analytics = users
+            .Select(u => new
+            {
+                UserId = u.Id,
+                Name = u.Name,
+                Email = u.Email,
+                Company = u.Company.Name,
+                City = u.Address.City,
+                PostCount = posts.Count(p => p.UserId == u.Id),
+                AvgPostTitleLength = posts
+                    .Where(p => p.UserId == u.Id)
+                    .Select(p => p.Title.Length)
+                    .DefaultIfEmpty(0)
+                    .Average()
+            })
+            .OrderByDescending(a => a.PostCount)
+            .ToList();
+
+        return new
+        {
+            TotalUsers = users.Count(),
+            TotalPosts = posts.Count(),
+            AveragePostsPerUser = posts.Count() / (double)users.Count(),
+            MostActiveUsers = analytics.Take(5),
+            UsersByCity = analytics
+                .GroupBy(a => a.City)
+                .Select(g => new { City = g.Key, UserCount = g.Count() })
+                .OrderByDescending(x => x.UserCount),
+            CompaniesByActivity = analytics
+                .GroupBy(a => a.Company)
+                .Select(g => new 
+                { 
+                    Company = g.Key, 
+                    Employees = g.Count(), 
+                    TotalPosts = g.Sum(x => x.PostCount) 
+                })
+                .OrderByDescending(x => x.TotalPosts)
+        };
+    }
+
+    public async Task<IEnumerable<object>> GetPopularPostsAsync()
+    {
+        var posts = await _api.GetPostsAsync();
+        var users = await _api.GetUsersAsync();
+        var comments = await _api.GetCommentsAsync();
+
+        return posts
+            .Select(p => new
+            {
+                Id = p.Id,
+                Title = p.Title,
+                Body = p.Body.Length > 100 ? p.Body.Substring(0, 100) + "..." : p.Body,
+                Author = users.FirstOrDefault(u => u.Id == p.UserId)?.Name ?? "Unknown",
+                AuthorCompany = users.FirstOrDefault(u => u.Id == p.UserId)?.Company?.Name ?? "Unknown",
+                CommentCount = comments.Count(c => c.PostId == p.Id),
+                TitleWordCount = p.Title.Split(' ').Length,
+                BodyWordCount = p.Body.Split(' ').Length
+            })
+            .OrderByDescending(p => p.CommentCount)
+            .Take(10);
+    }
+}
+```
+
+### 📦 Step 4: Package References
+
+Make sure your project has the required dependencies:
+
+```xml
+<!-- YourProject.csproj -->
+<Project Sdk="Microsoft.NET.Sdk.Web"> <!-- or Microsoft.NET.Sdk for console -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework> <!-- or net9.0 -->
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Noundry.EnterpriseApiClient" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <!-- For web apps, also include: -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+</Project>
+```
+
+### 🚀 Running the Applications
+
+**Console App:**
+```bash
+dotnet run
+```
+
+**Web App:**
+```bash
+dotnet run
+# Navigate to https://localhost:5001/swagger to see the API documentation
+# Test endpoints:
+# GET /api/users
+# GET /api/users/1
+# GET /api/users/by-city/paris
+# GET /api/analytics/user-activity
+# GET /api/analytics/popular-posts
+```
+
+### 🎯 Key Benefits Demonstrated
+
+This complete example showcases:
+
+✅ **Strongly-typed models** with full IntelliSense support
+✅ **Automatic JSON serialization/deserialization** with proper attribute mapping
+✅ **Comprehensive CRUD operations** for all entity types
+✅ **Advanced LINQ queries** including cross-entity joins and aggregations  
+✅ **Dependency injection integration** for both console and web applications
+✅ **Proper error handling and logging** throughout the application
+✅ **Separation of concerns** with service layers and controllers
+✅ **Real-world business logic** with analytics and reporting features
+
 ## 🔐 Authentication
 
 ### Token Authentication

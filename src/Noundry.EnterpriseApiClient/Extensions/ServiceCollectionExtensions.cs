@@ -54,6 +54,40 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddEnterpriseApiClient<TClient>(
+        this IServiceCollection services,
+        Action<EnterpriseApiClientOptions> configureOptions)
+        where TClient : class
+    {
+        services.Configure(configureOptions);
+        services.AddTransient<AuthenticatedHttpMessageHandler>();
+
+        var refitSettings = new RefitSettings
+        {
+            ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            })
+        };
+
+        services.AddRefitClient<TClient>(refitSettings)
+            .ConfigureHttpClient((serviceProvider, httpClient) =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptions<EnterpriseApiClientOptions>>().Value;
+                httpClient.BaseAddress = new Uri(options.BaseUrl);
+                httpClient.Timeout = options.Timeout;
+
+                foreach (var header in options.DefaultHeaders)
+                {
+                    httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            })
+            .AddHttpMessageHandler<AuthenticatedHttpMessageHandler>();
+
+        return services;
+    }
+
     public static IServiceCollection AddTokenAuthentication(
         this IServiceCollection services,
         string token)
