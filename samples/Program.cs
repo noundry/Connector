@@ -1,17 +1,17 @@
 using Microsoft.Extensions.DependencyInjection;
-using Noundry.EnterpriseApiClient.Authentication;
-using Noundry.EnterpriseApiClient.Extensions;
-using Noundry.EnterpriseApiClient.Samples.GitHub;
-using Noundry.EnterpriseApiClient.Samples.GitHub.Models;
+using Noundry.Connector.Authentication;
+using Noundry.Connector.Extensions;
+using Noundry.Connector.Samples.GitHub;
+using Noundry.Connector.Samples.GitHub.Models;
 
 const string githubToken = "github_pat_your_token_here"; // Replace with your GitHub token
 
 var services = new ServiceCollection();
 
-services.AddEnterpriseApiClient<IGitHubApi, GitHubRepository, long>(options =>
+services.AddConnector<IGitHubApi, GitHubRepository, long>(options =>
 {
     options.BaseUrl = "https://api.github.com";
-    options.DefaultHeaders["User-Agent"] = "Noundry.EnterpriseApiClient.Sample/1.0.0";
+    options.DefaultHeaders["User-Agent"] = "Noundry.Connector.Sample/1.0.0";
     options.DefaultHeaders["Accept"] = "application/vnd.github.v3+json";
 }, new TokenAuthenticationProvider(githubToken));
 
@@ -22,7 +22,7 @@ var gitHubClient = serviceProvider.GetRequiredService<GitHubClient>();
 
 try
 {
-    Console.WriteLine("=== Noundry Enterprise API Client - GitHub Sample ===\n");
+    Console.WriteLine("=== Noundry Connector - GitHub Sample ===\n");
 
     // Get and display users
     Console.WriteLine("Fetching users...");

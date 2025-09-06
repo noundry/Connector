@@ -1,11 +1,11 @@
-# Noundry.EnterpriseApiClient
+# Noundry.Connector
 
-[![NuGet Version](https://img.shields.io/badge/nuget-v1.0.0-blue.svg)](https://nuget.org/packages/Noundry.EnterpriseApiClient)
+[![NuGet Version](https://img.shields.io/badge/nuget-v1.0.0-blue.svg)](https://nuget.org/packages/Noundry.Connector)
 [![.NET Version](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/)
 
-A powerful, flexible Enterprise API Client library built on Refit that provides **strongly-typed HTTP clients** with automatic authentication, comprehensive CRUD operations, and advanced LINQ querying capabilities. Designed for enterprise applications that demand type safety, performance, and maintainability.
+A powerful, flexible **API Connector library** built on Refit that provides **strongly-typed HTTP clients** with automatic authentication, comprehensive CRUD operations, and advanced LINQ querying capabilities. Designed for modern .NET applications that demand type safety, performance, and developer productivity.
 
 ## 🚀 Why Strongly-Typed API Models?
 
@@ -84,20 +84,20 @@ string email = user.Email; // Compiler error forces you to update the model
 ### Installation
 
 ```bash
-dotnet add package Noundry.EnterpriseApiClient
+dotnet add package Noundry.Connector
 ```
 
 ### Basic Setup
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
-using Noundry.EnterpriseApiClient.Extensions;
-using Noundry.EnterpriseApiClient.Authentication;
+using Noundry.Connector.Extensions;
+using Noundry.Connector.Authentication;
 
 var services = new ServiceCollection();
 
 // Configure with automatic token authentication
-services.AddEnterpriseApiClient<IYourApi, YourEntity, int>(options =>
+services.AddConnector<IYourApi, YourEntity, int>(options =>
 {
     options.BaseUrl = "https://api.yourdomain.com";
     options.DefaultHeaders["User-Agent"] = "MyApp/1.0.0";
@@ -301,7 +301,7 @@ Create a complete console application with dependency injection:
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Noundry.EnterpriseApiClient.Extensions;
+using Noundry.Connector.Extensions;
 using MyApp.Services;
 using MyApp.Models;
 
@@ -313,7 +313,7 @@ builder.Services.AddLogging(configure => configure.AddConsole());
 
 // Configure JSONPlaceholder API client
 builder.Services.AddTokenAuthentication("no-auth-required"); // JSONPlaceholder doesn't require auth
-builder.Services.AddEnterpriseApiClient<IJsonPlaceholderApi>(options =>
+builder.Services.AddConnector<IJsonPlaceholderApi>(options =>
 {
     options.BaseUrl = "https://jsonplaceholder.typicode.com";
     options.DefaultHeaders["User-Agent"] = "MyConsoleApp/1.0.0";
@@ -577,7 +577,7 @@ Create a complete ASP.NET Core web application:
 
 ```csharp
 // Program.cs
-using Noundry.EnterpriseApiClient.Extensions;
+using Noundry.Connector.Extensions;
 using MyApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -589,7 +589,7 @@ builder.Services.AddSwaggerGen();
 
 // Configure JSONPlaceholder API client
 builder.Services.AddTokenAuthentication("no-auth-required");
-builder.Services.AddEnterpriseApiClient<IJsonPlaceholderApi>(options =>
+builder.Services.AddConnector<IJsonPlaceholderApi>(options =>
 {
     options.BaseUrl = "https://jsonplaceholder.typicode.com";
     options.DefaultHeaders["User-Agent"] = "MyWebApp/1.0.0";
@@ -898,7 +898,7 @@ Make sure your project has the required dependencies:
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Noundry.EnterpriseApiClient" Version="1.0.0" />
+    <PackageReference Include="Noundry.Connector" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <!-- For web apps, also include: -->
@@ -945,7 +945,7 @@ This complete example showcases:
 ```csharp
 services.AddTokenAuthentication("your-api-token");
 
-services.AddEnterpriseApiClient<IYourApi, Entity, int>(options =>
+services.AddConnector<IYourApi, Entity, int>(options =>
 {
     options.BaseUrl = "https://api.example.com";
 }, serviceProvider.GetRequiredService<IAuthenticationProvider>());
@@ -1069,7 +1069,7 @@ public class CreateRepositoryRequest
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
-using Noundry.EnterpriseApiClient.Extensions;
+using Noundry.Connector.Extensions;
 using MyApp.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -1087,7 +1087,7 @@ builder.Services.AddOAuthAuthentication(config =>
 });
 
 // Configure GitHub API client
-builder.Services.AddEnterpriseApiClient<IGitHubApi>(options =>
+builder.Services.AddConnector<IGitHubApi>(options =>
 {
     options.BaseUrl = "https://api.github.com";
     options.DefaultHeaders["Accept"] = "application/vnd.github.v3+json";
@@ -1221,7 +1221,7 @@ For web applications, you'll typically need to handle the OAuth authorization fl
 ```csharp
 // Controllers/AuthController.cs
 using Microsoft.AspNetCore.Mvc;
-using Noundry.EnterpriseApiClient.Authentication;
+using Noundry.Connector.Authentication;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -1294,7 +1294,7 @@ builder.Services.AddOAuthAuthentication(config =>
 });
 
 // Configure GitHub API client
-builder.Services.AddEnterpriseApiClient<IGitHubApi>(options =>
+builder.Services.AddConnector<IGitHubApi>(options =>
 {
     options.BaseUrl = "https://api.github.com";
     options.DefaultHeaders["Accept"] = "application/vnd.github.v3+json";
@@ -2043,7 +2043,7 @@ public class ApiConfiguration
 
 // In Startup.cs or Program.cs
 services.Configure<ApiConfiguration>(configuration.GetSection("ApiSettings"));
-services.AddEnterpriseApiClient<IMyApi, MyEntity, int>((serviceProvider, options) =>
+services.AddConnector<IMyApi, MyEntity, int>((serviceProvider, options) =>
 {
     var config = serviceProvider.GetRequiredService<IOptions<ApiConfiguration>>().Value;
     options.BaseUrl = config.BaseUrl;
@@ -2097,7 +2097,7 @@ public class JsonPlaceholderIntegrationTests
     public void Setup()
     {
         var services = new ServiceCollection();
-        services.AddEnterpriseApiClient<IJsonPlaceholderApi, User, int>(options =>
+        services.AddConnector<IJsonPlaceholderApi, User, int>(options =>
         {
             options.BaseUrl = "https://jsonplaceholder.typicode.com";
         }, new TokenAuthenticationProvider("no-auth-required"));
@@ -2123,7 +2123,7 @@ public class JsonPlaceholderIntegrationTests
 ### Custom Serialization Settings
 
 ```csharp
-services.AddEnterpriseApiClient<IMyApi, MyEntity, int>(options =>
+services.AddConnector<IMyApi, MyEntity, int>(options =>
 {
     options.BaseUrl = "https://api.example.com";
     options.SerializerOptions = new JsonSerializerOptions

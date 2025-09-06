@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Noundry.EnterpriseApiClient\Noundry.EnterpriseApiClient.csproj" />
+    <ProjectReference Include="..\src\Noundry.Connector\Noundry.Connector.csproj" />
   </ItemGroup>
 
 </Project>
