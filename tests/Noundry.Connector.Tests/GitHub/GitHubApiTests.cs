@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Noundry.Connector.Authentication;
 using Noundry.Connector.Extensions;
-using Noundry.Connector.Samples.GitHub;
-using Noundry.Connector.Samples.GitHub.Models;
+using Samples.GitHub;
+using Samples.GitHub.Models;
 using System.Text;
 using System.Text.Json;
 

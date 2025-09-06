@@ -1,7 +1,7 @@
-using Noundry.Connector.Samples.JSONPlaceholder.Models;
+using Samples.JSONPlaceholder.Models;
 using Refit;
 
-namespace Noundry.Connector.Samples.JSONPlaceholder;
+namespace Samples.JSONPlaceholder;
 
 public interface IJsonPlaceholderApi
 {

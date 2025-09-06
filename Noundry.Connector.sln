@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noundry.Connector.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "samples", "samples\samples.csproj", "{A0EF8339-4CEA-4B90-B060-B5168FC71AEE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noundry.Connector.Generator", "tools\Noundry.Connector.Generator\Noundry.Connector.Generator.csproj", "{3FF0FA72-318A-4EB7-9F96-A335C2E30939}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +63,18 @@ Global
 		{A0EF8339-4CEA-4B90-B060-B5168FC71AEE}.Release|x64.Build.0 = Release|Any CPU
 		{A0EF8339-4CEA-4B90-B060-B5168FC71AEE}.Release|x86.ActiveCfg = Release|Any CPU
 		{A0EF8339-4CEA-4B90-B060-B5168FC71AEE}.Release|x86.Build.0 = Release|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Debug|x64.Build.0 = Debug|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Debug|x86.Build.0 = Debug|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Release|x64.ActiveCfg = Release|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Release|x64.Build.0 = Release|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Release|x86.ActiveCfg = Release|Any CPU
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,5 +82,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C557F659-37C0-4173-B333-CDC693C07B4A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{DCE38220-551F-4A07-9919-F48EDD5AB3F0} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{3FF0FA72-318A-4EB7-9F96-A335C2E30939} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 EndGlobal

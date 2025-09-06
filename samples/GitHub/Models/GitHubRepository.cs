@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Noundry.Connector.Samples.GitHub.Models;
+namespace Samples.GitHub.Models;
 
 public class GitHubRepository
 {

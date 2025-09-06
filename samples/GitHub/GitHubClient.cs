@@ -1,6 +1,6 @@
-using Noundry.Connector.Samples.GitHub.Models;
+using Samples.GitHub.Models;
 
-namespace Noundry.Connector.Samples.GitHub;
+namespace Samples.GitHub;
 
 public class GitHubClient
 {

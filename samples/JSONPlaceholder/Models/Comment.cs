@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Noundry.Connector.Samples.JSONPlaceholder.Models;
+namespace Samples.JSONPlaceholder.Models;
 
 public class Comment
 {

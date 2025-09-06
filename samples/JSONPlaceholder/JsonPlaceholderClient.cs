@@ -1,6 +1,6 @@
-using Noundry.Connector.Samples.JSONPlaceholder.Models;
+using Samples.JSONPlaceholder.Models;
 
-namespace Noundry.Connector.Samples.JSONPlaceholder;
+namespace Samples.JSONPlaceholder;
 
 public class JsonPlaceholderClient
 {

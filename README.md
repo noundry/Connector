@@ -7,6 +7,25 @@
 
 A powerful, flexible **API Connector library** built on Refit that provides **strongly-typed HTTP clients** with automatic authentication, comprehensive CRUD operations, and advanced LINQ querying capabilities. Designed for modern .NET applications that demand type safety, performance, and developer productivity.
 
+## 🎯 **Get Started in 30 Seconds**
+
+**Option 1: Use the CLI Generator (Recommended)**
+```bash
+# Install the code generator tool
+dotnet tool install -g Noundry.Connector.Generator
+
+# Generate a complete API client
+connector-gen generate
+```
+
+**Option 2: Manual Setup**
+```bash
+# Install the core library
+dotnet add package Noundry.Connector
+```
+
+> 💡 **New!** The CLI tool automatically generates strongly-typed clients, models, and configuration for any REST API. [See full walkthrough below](#-cli-tool-walkthrough).
+
 ## 🚀 Why Strongly-Typed API Models?
 
 Traditional API consumption often relies on weakly-typed approaches like `dynamic`, `JObject`, or raw JSON strings. This library champions **strongly-typed models** for several critical reasons:
@@ -57,6 +76,14 @@ string email = user.Email; // Compiler error forces you to update the model
 
 ## 🌟 Features
 
+### 🎮 **CLI Code Generator (New!)**
+- **🧙‍♂️ Interactive Wizard**: Beautiful Spectre.Console interface guides you through setup
+- **🔍 Auto-Discovery**: Automatically finds API endpoints from OpenAPI/Swagger specs
+- **📊 Schema Analysis**: Analyzes JSON responses to generate strongly-typed models
+- **🏗️ Complete Generation**: Models, interfaces, clients, and DI extensions
+- **🔐 Multi-Auth Support**: API Key, Bearer Token, Basic Auth, and OAuth 2.0
+
+### 🏛️ **Core Library**  
 - **🔐 Automatic Authentication**: OAuth 2.0 and Token-based with auto-refresh
 - **🎯 Type-Safe API Clients**: Refit-powered strongly-typed HTTP clients  
 - **🔄 Full CRUD Operations**: Generic interfaces for Create, Read, Update, Delete
@@ -68,20 +95,320 @@ string email = user.Email; // Compiler error forces you to update the model
 
 ## 📋 Table of Contents
 
-1. [Quick Start](#quick-start)
-2. [Installation](#installation) 
-3. [Authentication](#authentication)
-4. [Strongly-Typed Models](#strongly-typed-models)
-5. [CRUD Operations](#crud-operations)
-6. [LINQ Querying](#linq-querying)
-7. [Real-World Examples](#real-world-examples)
-8. [Best Practices](#best-practices)
-9. [Performance Benchmarks](#performance-benchmarks)
-10. [Migration Guide](#migration-guide)
+1. [🎮 CLI Tool Walkthrough](#-cli-tool-walkthrough)
+2. [Quick Start](#quick-start)
+3. [Installation](#installation) 
+4. [Authentication](#authentication)
+5. [Strongly-Typed Models](#strongly-typed-models)
+6. [CRUD Operations](#crud-operations)
+7. [LINQ Querying](#linq-querying)
+8. [Real-World Examples](#real-world-examples)
+9. [Best Practices](#best-practices)
+10. [Performance Benchmarks](#performance-benchmarks)
+11. [Migration Guide](#migration-guide)
+
+---
+
+## 🎮 **CLI Tool Walkthrough**
+
+The **Noundry.Connector.Generator** is a wizard-style CLI tool that automatically generates strongly-typed API clients for any REST API. Here's a complete walkthrough:
+
+### Installation
+
+```bash
+# Install globally
+dotnet tool install -g Noundry.Connector.Generator
+
+# Or install locally in your project
+dotnet new tool-manifest
+dotnet tool install Noundry.Connector.Generator
+```
+
+### Complete Console Walkthrough
+
+Here's what happens when you run the generator:
+
+```console
+$ connector-gen generate
+
+ ██████╗ ██████╗ ███╗   ██╗███╗   ██╗███████╗ ██████╗████████╗ ██████╗ ██████╗ 
+██╔════╝██╔═══██╗████╗  ██║████╗  ██║██╔════╝██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗
+██║     ██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██║        ██║   ██║   ██║██████╔╝
+██║     ██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██║        ██║   ██║   ██║██╔══██╗
+╚██████╗╚██████╔╝██║ ╚████║██║ ╚████║███████╗╚██████╗   ██║   ╚██████╔╝██║  ██║
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
+                                                                                   
+ ██████╗ ███████╗███╗   ██╗███████╗██████╗  █████╗ ████████╗ ██████╗ ██████╗   
+██╔════╝ ██╔════╝████╗  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗  
+██║  ███╗█████╗  ██╔██╗ ██║█████╗  ██████╔╝███████║   ██║   ██║   ██║██████╔╝  
+██║   ██║██╔══╝  ██║╚██╗██║██╔══╝  ██╔══██╗██╔══██║   ██║   ██║   ██║██╔══██╗  
+╚██████╔╝███████╗██║ ╚████║███████╗██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║  
+ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝  
+
+╭─────────────────────── 🚀 API Client Code Generator ────────────────────────╮
+│                                                                             │
+│ Welcome to Noundry Connector Generator!                                    │
+│                                                                             │
+│ This wizard will help you:                                                 │
+│ • Connect to any REST API                                                  │
+│ • Generate strongly-typed C# models                                        │
+│ • Create Refit interfaces                                                  │
+│ • Build ready-to-use API clients                                           │
+│                                                                             │
+│ Powered by Noundry.Connector                                               │
+╰─────────────────────────────────────────────────────────────────────────────╯
+
+───────────────────────────── 🌐 API Configuration ──────────────────────────────
+
+Enter the API base URL: https://jsonplaceholder.typicode.com
+Enter a name for your API client [JsonPlaceholder]: 
+Enter the namespace for generated classes [MyApp.ApiClients.JsonPlaceholder]: 
+
+⠋ Testing API connectivity...
+✓ API is accessible
+
+─────────────────────────────── 🔐 Authentication Setup ──────────────────────────────
+
+Select authentication method:
+❯ No Authentication
+  API Key  
+  Bearer Token
+  Basic Authentication (Username/Password)
+  OAuth 2.0 (Client ID/Secret)
+
+───────────────────────────── 🔍 Endpoint Discovery ─────────────────────────────
+
+Automatically discover API endpoints? [y/n] (y): y
+
+⠙ Discovering API endpoints...
+✓ Found 20 endpoints
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Method │ Path              │ Description                                │
+├────────┼───────────────────┼───────────────────────────────────────────┤
+│ GET    │ /posts            │ GET /posts                                 │
+│ GET    │ /posts/{id}       │ GET /posts/{id}                           │
+│ POST   │ /posts            │ Create new post                           │
+│ PUT    │ /posts/{id}       │ Update post                               │
+│ DELETE │ /posts/{id}       │ Delete post                               │
+│ GET    │ /users            │ GET /users                                │
+│ GET    │ /users/{id}       │ GET /users/{id}                           │
+│ GET    │ /comments         │ GET /comments                             │
+│ ...    │ ...               │ (12 more endpoints)                       │
+└────────────────────────────────────────────────────────────────────────┘
+
+Add manual endpoints for testing? [y/n] (n): n
+
+─────────────────────────────── 📊 Schema Analysis ───────────────────────────────
+
+⠴ Analyzing API responses...
+✓ Analyzed 8 response schemas
+
+┌──────────────────────────────────────────────────────────────┐
+│ Model Name │ Properties │ Type       │                        │
+├────────────┼────────────┼────────────┤                        │
+│ Post       │ 4          │ Object     │                        │
+│ User       │ 8          │ Object     │                        │
+│ Comment    │ 5          │ Object     │                        │
+│ Address    │ 7          │ Object     │                        │
+│ Company    │ 3          │ Object     │                        │
+│ Geo        │ 2          │ Object     │                        │
+│ ...        │ ...        │ (2 more models)                     │
+└──────────────────────────────────────────────────────────────┘
+
+──────────────────────────────── ⚙️ Generation Options ─────────────────────────────────
+
+Output directory [./Generated]: ./MyApi
+Generate model classes? [y/n] (y): y
+Generate Refit interface? [y/n] (y): y  
+Generate client wrapper class? [y/n] (y): y
+Generate DI extension methods? [y/n] (y): y
+Use C# records for models? [y/n] (y): y
+Use nullable reference types? [y/n] (y): y
+
+╭───────────────────────── Generation Summary ─────────────────────────╮
+│                                                                       │
+│ API Name      │ JsonPlaceholder                                       │
+│ Namespace     │ MyApp.ApiClients.JsonPlaceholder                      │
+│ Output Path   │ ./MyApi                                               │
+│ Generate Models │ Yes                                                 │
+│ Generate Interface │ Yes                                              │
+│ Generate Client │ Yes                                                 │
+│ Use Records   │ Yes                                                   │
+│                                                                       │
+╰───────────────────────────────────────────────────────────────────────╯
+
+Proceed with code generation? [y/n] (y): y
+
+───────────────────────────────── 🔧 Code Generation ──────────────────────────────────
+
+⠦ Generating code...
+⠴ Writing files...
+
+╭──────────────────────────── 🎉 Success! ────────────────────────────╮
+│                                                                     │
+│ ✓ Code generation completed successfully!                           │
+│                                                                     │
+│ Generated files in: ./MyApi                                         │
+│                                                                     │
+│ Next steps:                                                         │
+│ 1. Add the generated files to your project                          │
+│ 2. Install Noundry.Connector NuGet package                          │
+│ 3. Configure DI in your startup code                                │
+│ 4. Start using your strongly-typed API client!                      │
+│                                                                     │
+╰─────────────────────────────────────────────────────────────────────╯
+```
+
+### Generated File Structure
+
+After running the generator, you'll find:
+
+```
+MyApi/
+├── Models/
+│   ├── Post.cs           # public record Post
+│   ├── User.cs           # public record User  
+│   ├── Comment.cs        # public record Comment
+│   ├── Address.cs        # public record Address
+│   └── Company.cs        # public record Company
+├── IJsonPlaceholderApi.cs    # Refit interface
+├── JsonPlaceholderClient.cs  # Client wrapper class  
+└── JsonPlaceholderExtensions.cs  # DI extensions
+```
+
+### Example Generated Code
+
+**Model (Post.cs):**
+```csharp
+using System.Text.Json.Serialization;
+
+namespace MyApp.ApiClients.JsonPlaceholder.Models;
+
+/// <summary>
+/// Post model from JsonPlaceholder API
+/// </summary>
+public record Post
+{
+    [JsonPropertyName("id")]
+    public int Id { get; init; }
+    
+    [JsonPropertyName("userId")]
+    public int UserId { get; init; }
+    
+    [JsonPropertyName("title")]
+    public string Title { get; init; }
+    
+    [JsonPropertyName("body")]
+    public string Body { get; init; }
+}
+```
+
+**Interface (IJsonPlaceholderApi.cs):**
+```csharp
+using Refit;
+using MyApp.ApiClients.JsonPlaceholder.Models;
+
+namespace MyApp.ApiClients.JsonPlaceholder;
+
+public interface IJsonPlaceholderApi
+{
+    [Get("/posts")]
+    Task<List<Post>> GetAllPostsAsync(CancellationToken cancellationToken = default);
+    
+    [Get("/posts/{id}")]
+    Task<Post> GetPostAsync(int id, CancellationToken cancellationToken = default);
+    
+    [Post("/posts")]
+    Task<Post> CreatePostAsync([Body] Post request, CancellationToken cancellationToken = default);
+}
+```
+
+### Integration in Your App
+
+**1. Install Noundry.Connector:**
+```bash
+dotnet add package Noundry.Connector
+```
+
+**2. Configure DI (Program.cs):**
+```csharp
+using MyApp.ApiClients.JsonPlaceholder.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add the generated API client
+builder.Services.AddJsonPlaceholderClient("https://jsonplaceholder.typicode.com");
+
+var app = builder.Build();
+```
+
+**3. Use in Your Services:**
+```csharp
+public class PostService
+{
+    private readonly JsonPlaceholderClient _client;
+    
+    public PostService(JsonPlaceholderClient client)
+    {
+        _client = client;
+    }
+    
+    public async Task<IEnumerable<Post>> GetRecentPostsAsync()
+    {
+        var posts = await _client.GetAllPostsAsync();
+        
+        // Use LINQ to filter and query
+        return posts
+            .Where(p => p.UserId <= 5)
+            .OrderByDescending(p => p.Id)
+            .Take(10);
+    }
+}
+```
+
+### Command Line Options
+
+```bash
+# Interactive mode (default)
+connector-gen generate
+
+# Non-interactive mode
+connector-gen generate --api-url https://api.example.com --output ./Generated --interactive false
+
+# Get help
+connector-gen --help
+connector-gen generate --help
+```
+
+---
 
 ## 🚀 Quick Start
 
-### Installation
+### Option 1: CLI Generator (Recommended)
+
+**Generate a complete API client with a single command:**
+
+```bash
+# 1. Install the generator tool
+dotnet tool install -g Noundry.Connector.Generator
+
+# 2. Run the interactive wizard
+connector-gen generate
+
+# 3. Follow the prompts - done! 🎉
+```
+
+The CLI tool will:
+- ✅ Test API connectivity
+- ✅ Discover endpoints automatically  
+- ✅ Analyze response schemas
+- ✅ Generate strongly-typed models
+- ✅ Create Refit interfaces
+- ✅ Build client wrapper classes
+- ✅ Set up dependency injection
+
+### Option 2: Manual Installation
 
 ```bash
 dotnet add package Noundry.Connector

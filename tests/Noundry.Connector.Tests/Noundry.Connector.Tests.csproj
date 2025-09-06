@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Noundry.Connector\Noundry.Connector.csproj" />
+    <ProjectReference Include="..\..\samples\samples.csproj" />
   </ItemGroup>
 
   <ItemGroup>

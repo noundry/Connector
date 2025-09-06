@@ -1,8 +1,8 @@
-using Noundry.Connector.Samples.GitHub.Models;
+using Samples.GitHub.Models;
 using Refit;
 using System.Text.Json.Serialization;
 
-namespace Noundry.Connector.Samples.GitHub;
+namespace Samples.GitHub;
 
 public interface IGitHubApi
 {

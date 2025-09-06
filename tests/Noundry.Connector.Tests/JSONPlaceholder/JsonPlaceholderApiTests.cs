@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Noundry.Connector.Authentication;
 using Noundry.Connector.Extensions;
-using Noundry.Connector.Samples.JSONPlaceholder;
-using Noundry.Connector.Samples.JSONPlaceholder.Models;
+using Samples.JSONPlaceholder;
+using Samples.JSONPlaceholder.Models;
 using System.Text.Json;
 
 namespace Noundry.Connector.Tests.JSONPlaceholder;
