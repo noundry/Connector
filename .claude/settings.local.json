@@ -15,7 +15,8 @@
       "Bash(dotnet build:*)",
       "Bash(git remote set-url:*)",
       "Bash(tree:*)",
-      "Bash(dotnet run:*)"
+      "Bash(dotnet run:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
